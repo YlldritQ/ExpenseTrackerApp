@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/expense.dart';
 
 class ApiService {
-  static const baseUrl = 'http://localhost:8080';
+  static const baseUrl = 'http://localhost:8080/api';
 
   Future<List<Expense>> getExpenses() async {
     final response = await http.get(Uri.parse('$baseUrl/expenses'));

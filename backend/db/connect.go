@@ -20,6 +20,7 @@ func Connect() {
 	}
 
 	db.AutoMigrate(&models.Expense{})
+	db.AutoMigrate(&models.User{})
 
 	DB = db
 

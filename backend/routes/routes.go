@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/YlldritQ/ExpenseTrackerApp/handlers"
+	"github.com/YlldritQ/ExpenseTrackerApp/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -16,9 +17,17 @@ func SetupRouter() *gin.Engine {
     AllowCredentials: true,
 }))
 
-	r.GET("expenses", handlers.GetExpenses)
-	r.POST("expenses", handlers.AddExpense)
-	r.DELETE("expenses/:id", handlers.DeleteExpense)
+	AuthRoutes(r)
+	// Protected routes
 
+	protected := r.Group("/api")
+	protected.Use(middleware.AuthMiddleware())
+	{
+		protected.GET("expenses", handlers.GetExpenses)
+		protected.GET("expenses/user", handlers.GetUserExpenses)
+		protected.POST("expenses", handlers.AddExpense)
+		protected.DELETE("expenses/:id", handlers.DeleteExpense)
+	}
+	
 	return r
 }

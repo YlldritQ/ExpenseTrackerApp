@@ -11,7 +11,24 @@ import (
 
 func GetExpenses(c *gin.Context) {
 	var expenses []models.Expense
-	if err := db.DB.Find(&expenses).Error; err != nil {
+	if err := db.DB.Preload("User").Find(&expenses).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, expenses)
+}
+
+func GetUserExpenses(c *gin.Context) {
+	var expenses []models.Expense
+	userId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found in context"})
+		return
+	}
+	
+	uid := userId.(uint)
+	if err := db.DB.Where("user_id = ?", uid).Preload("User").Find(&expenses).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -26,6 +43,14 @@ func AddExpense(c *gin.Context) {
 		return
 	}
 
+	userId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found in context"})
+		return
+	}
+
+	uid := userId.(uint)
+	expense.UserID = &uid
 	expense.Date = time.Now()
 	if err := db.DB.Create(&expense).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
